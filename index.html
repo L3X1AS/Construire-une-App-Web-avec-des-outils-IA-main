@@ -66,10 +66,16 @@
         <button class="btn-random" onclick="pickRandom()">— Paire aléatoire —</button>
       </div>
 
+      <!-- Daily Mode -->
+      <div class="random-row">
+        <button id="btn-daily" class="btn-random">🎯 JOUER DÉFI DU JOUR <span id="streak-disp"></span></button>
+      </div>
+
       <div class="mode-row">
-        <button class="btn-mode sel" id="btn-m-chill" onclick="selectMode('chill')">Exploration</button>
-        <button class="btn-mode" id="btn-m-comp" onclick="selectMode('competitive')">Contre-la-montre</button>
-        <button class="btn-mode" id="btn-m-surv" onclick="selectMode('survival')">Survie</button>
+        <button id="btn-m-chill" class="btn-mode sel" onclick="selectMode('chill')">Exploration</button>
+        <button id="btn-m-daily" class="btn-mode" onclick="selectMode('daily')" style="display:none;">Défi du jour</button>
+        <button id="btn-m-comp"  class="btn-mode" onclick="selectMode('competitive')">Chrono</button>
+        <button id="btn-m-surv"  class="btn-mode" onclick="selectMode('survival')">Survie</button>
       </div>
 
       <button class="btn-play" id="btn-play" onclick="playGame()">Commencer</button>
@@ -135,6 +141,14 @@
         <div class="prog-bar">
           <div class="prog-fill" id="prog-fill"></div>
         </div>
+        
+        <!-- Radar Thématique -->
+        <div id="semantic-bar" style="position:absolute; top:2px; left:0; right:0; height:4px; z-index:20; pointer-events:none; background:var(--rule); display:flex; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
+           <div id="semantic-fill" style="height:100%; width:0%; background:linear-gradient(90deg, #1A4F8A, #4a9a70, #c23a45); transition:width .5s ease, background-color .5s; position:relative;">
+               <div style="position:absolute; right:2px; top:8px; font-family:var(--fm); font-size:9px; font-weight:bold; color:var(--text); text-shadow:0 0 2px var(--bg); letter-spacing:1px; white-space:nowrap; transform:translateX(100%);">🌡 RADAR (THERMIQUE)</div>
+           </div>
+        </div>
+
         <iframe id="wiki-frame" title="Article Wikipédia"></iframe>
       </div>
 
@@ -161,6 +175,12 @@
         <div class="win-num" id="win-clicks">0</div>
         <div class="win-lbl">Clics</div>
         <div class="win-best" id="win-best">Record : --</div>
+        <div class="win-best" id="win-optimal" style="color:var(--sub); margin-top:4px;"></div>
+        
+        <div id="win-solution" style="display:none; margin-top:10px; font-family:var(--fm); font-size:.7rem; color:var(--muted);">
+          <button id="btn-sol" onclick="document.getElementById('sol-text').style.display='block'; this.style.display='none';" style="background:none; border:1px dashed var(--border); color:var(--text); padding:5px 10px; cursor:pointer; font-family:var(--fm); font-size:.62rem; text-transform:uppercase; letter-spacing:0.1em; transition:0.2s;"> Révéler le chemin optimal</button>
+          <div id="sol-text" style="display:none; margin-top:8px; line-height:1.5; color:var(--pass);"></div>
+        </div>
       </div>
       <div id="win-time-wrap" style="display:none">
         <div class="win-num" id="win-time">00:00</div>
@@ -168,14 +188,17 @@
       </div>
     </div>
     <button class="win-share" id="win-share-btn" onclick="shareResult()">Partager le résultat</button>
-    <div class="win-path-wrap">
-      <div class="win-path-label">Votre chemin</div>
-      <div id="win-path-list"></div>
-    </div>
+
     <div class="win-stats-top" id="win-stats-top">
       <div class="win-stats-top-title">Pages les plus visitées</div>
       <div class="win-stats-list" id="win-stats-list"></div>
     </div>
+    
+    <!-- Graphe Dessiné SVG -->
+    <div id="win-svg-wrap" style="width:100%; max-width:600px; margin: 0 auto 2rem; overflow-x:auto;">
+       <svg id="win-svg" width="100" height="80" style="display:block; margin:auto; overflow:visible;"></svg>
+    </div>
+
     <div class="win-btns">
       <button class="btn-win-replay" onclick="replayGame()">Rejouer</button>
       <button class="btn-win-home" onclick="goHome()">Accueil</button>
@@ -200,6 +223,13 @@
   </div>
 
   <script src="app.js" defer="defer"></script>
+<div id="wiki-preview" style="display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.15); max-width:320px; border-radius:6px; pointer-events:none; overflow:hidden;">
+  <div id="wp-img" style="width:100%; height:120px; background-size:cover; background-position:center; display:none;"></div>
+  <div style="padding:1rem;">
+    <div id="wp-title" style="font-family:var(--fd); font-weight:700; font-size:1.1rem; color:var(--text); margin-bottom:.3rem; line-height:1.2;"></div>
+    <div id="wp-desc" style="font-family:var(--fm); font-size:.68rem; color:var(--muted); line-height:1.4; letter-spacing:0.02em;"></div>
+  </div>
+</div>
 </body>
 
 </html>

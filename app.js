@@ -2,20 +2,20 @@
     const WIKI_REST = 'https://fr.wikipedia.org/api/rest_v1';
     const WIKI_API = 'https://fr.wikipedia.org/w/api.php';
 
-    const PAIRS = [
-      { start: 'Napoléon Bonaparte', end: 'Internet' },
-      { start: 'Tour Eiffel', end: 'Dinosaure' },
-      { start: 'Albert Einstein', end: 'Football' },
-      { start: 'Paris', end: 'Sushi' },
-      { start: 'Leonardo da Vinci', end: 'Volcan' },
-      { start: 'Chocolat', end: 'Guerre froide' },
-      { start: 'Marie Curie', end: 'Jazz' },
-      { start: 'Chat', end: 'Révolution française' },
-      { start: 'Égypte antique', end: 'Station spatiale internationale' },
-      { start: 'William Shakespeare', end: 'Atome' },
-      { start: 'Versailles', end: 'Calcul infinitésimal' },
-      { start: 'Jules Verne', end: 'ADN' },
-    ];
+  const PAIRS = [
+    { start: 'Napoléon Bonaparte', end: 'Internet', min: 3, path: ['Napoléon Bonaparte', 'France', 'Internet'] },
+    { start: 'Tour Eiffel', end: 'Dinosaure', min: 3, path: ['Tour Eiffel', 'Paris', 'Muséum national d\'histoire naturelle', 'Dinosaure'] },
+    { start: 'Albert Einstein', end: 'Football', min: 2, path: ['Albert Einstein', 'Allemagne', 'Football'] },
+    { start: 'Paris', end: 'Sushi', min: 2, path: ['Paris', 'Japon', 'Sushi'] },
+    { start: 'Leonardo da Vinci', end: 'Volcan', min: 3, path: ['Léonard de Vinci', 'Italie', 'Mont Vésuve', 'Volcan'] },
+    { start: 'Chocolat', end: 'Guerre froide', min: 3, path: ['Chocolat', 'États-Unis', 'Union soviétique', 'Guerre froide'] },
+    { start: 'Marie Curie', end: 'Jazz', min: 3, path: ['Marie Curie', 'États-Unis', 'La Nouvelle-Orléans', 'Jazz'] },
+    { start: 'Chat', end: 'Révolution française', min: 2, path: ['Chat', 'France', 'Révolution française'] },
+    { start: 'Égypte antique', end: 'Station spatiale internationale', min: 3, path: ['Égypte antique', 'Terre', 'Orbite terrestre basse', 'Station spatiale internationale'] },
+    { start: 'William Shakespeare', end: 'Atome', min: 3, path: ['William Shakespeare', 'Londres', 'Royal Society', 'Atome'] },
+    { start: 'Versailles', end: 'Calcul infinitésimal', min: 3, path: ['Château de Versailles', 'France', 'Mathématiques', 'Calcul infinitésimal'] },
+    { start: 'Jules Verne', end: 'ADN', min: 3, path: ['Jules Verne', 'Science', 'Biologie', 'Adn'] },
+  ];
 
     /* ─── IFRAME CSS ──────────────────────────── */
     function iframeCss(dark) {
@@ -75,13 +75,76 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
     window.parent.postMessage({type:'wiki-nav',title:title.trim()},'*');
   },true);
   document.addEventListener('submit',function(e){e.preventDefault();},true);
+
+  var hoverTimer = null;
+  document.addEventListener('mouseover', function(e){
+    var el=e.target;
+    while(el&&el.tagName!=='A') el=el.parentElement;
+    if(!el) return;
+    var href=el.getAttribute('href')||'';
+    var title=null;
+    if(/^\\.\\//g.test(href)){
+      title=decodeURIComponent(href.replace(/^\\.\\//,'').split('#')[0]).replace(/_/g,' ');
+    } else if(href.includes('/wiki/')){
+      title=decodeURIComponent(href.split('/wiki/').pop().split('#')[0]).replace(/_/g,' ');
+    }
+    if(!title||title.includes(':')||!title.trim()) return;
+    
+    hoverTimer = setTimeout(function(){
+      window.parent.postMessage({type:'wiki-hover', title:title.trim()},'*');
+    }, 600);
+  },true);
+
+  document.addEventListener('mouseout', function(e){
+    var el=e.target;
+    while(el&&el.tagName!=='A') el=el.parentElement;
+    if(!el) return;
+    clearTimeout(hoverTimer);
+    window.parent.postMessage({type:'wiki-unhover'},'*');
+  },true);
 })();
 `;
 
     /* ─── STATE ───────────────────────────────── */
-    let S = { mode: 'chill', pair: null, path: [], seconds: 0, timer: null, busy: false, sel: { start: null, end: null }, penalty: 0 };
-    let dbt = { start: null, end: null };
-    let sidx = { start: -1, end: -1 };
+  let S = { mode:'chill', pair:null, path:[], targetCats:[], seconds:0, timer:null, busy:false, sel:{start:null,end:null}, penalty:0 };
+  let dbt = {start:null,end:null};
+  let sidx = {start:-1,end:-1};
+
+  function getDailyPair() {
+    const d = new Date();
+    const hash = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    const idx = hash % PAIRS.length;
+    return PAIRS[idx];
+  }
+
+  function checkStreak() {
+    const today = new Date().toDateString();
+    let lastDate = localStorage.getItem('wikipath_last_daily');
+    let streak = parseInt(localStorage.getItem('wikipath_streak') || '0', 10);
+    if (lastDate) {
+      const msInDay = 86400000;
+      const diff = new Date(today) - new Date(lastDate);
+      if (diff > msInDay * 1.5) streak = 0; // Missed a day
+    }
+    return streak;
+  }
+
+  function winDaily() {
+    const today = new Date().toDateString();
+    let streak = checkStreak();
+    const lastDate = localStorage.getItem('wikipath_last_daily');
+    if (lastDate !== today) {
+       streak++;
+       localStorage.setItem('wikipath_streak', streak);
+       localStorage.setItem('wikipath_last_daily', today);
+    }
+  }
+
+  function renderDailyUI() {
+    const streak = checkStreak();
+    const disp = document.getElementById('streak-disp');
+    if (disp) disp.textContent = streak > 0 ? ` (🔥 ${streak})` : '';
+  }
 
     /* ─── THEME ───────────────────────────────── */
     let theme = 'light';
@@ -169,12 +232,21 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
       selectArt('start', p.start); selectArt('end', p.end);
     }
 
-    function selectMode(m) {
-      S.mode = m;
-      document.getElementById('btn-m-chill').classList.toggle('sel', m === 'chill');
-      document.getElementById('btn-m-comp').classList.toggle('sel', m === 'competitive');
-      document.getElementById('btn-m-surv').classList.toggle('sel', m === 'survival');
-    }
+    function selectMode(m){
+    S.mode=m;
+    document.getElementById('btn-m-chill').classList.toggle('sel',m==='chill');
+    document.getElementById('btn-m-comp').classList.toggle('sel',m==='competitive');
+    document.getElementById('btn-m-surv').classList.toggle('sel',m==='survival');
+    document.getElementById('btn-m-daily').classList.toggle('sel',m==='daily');
+  }
+
+  document.getElementById('btn-daily').onclick = () => {
+    selectMode('daily');
+    const p = getDailyPair();
+    selectArt('start', p.start);
+    selectArt('end', p.end);
+    playGame();
+  };
 
     function playGame() {
       if (!S.sel.start || !S.sel.end) return;
@@ -215,6 +287,36 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
       return j.title || raw;
     }
 
+  async function fetchCategories(title) {
+     const enc = encodeURIComponent(title);
+     try {
+       const r = await fetch(`${WIKI_API}?action=query&prop=categories&titles=${enc}&cllimit=500&format=json&origin=*`);
+       const j = await r.json();
+       const pages = j.query.pages;
+       for (let p in pages) {
+          if (pages[p].categories) return pages[p].categories.map(c => c.title);
+       }
+     } catch(e){}
+     return [];
+  }
+
+  async function computeSemanticHeat(title) {
+      if(!S.targetCats || !S.targetCats.length) return;
+      const curCats = await fetchCategories(title);
+      let matches = 0;
+      for(let cc of curCats) {
+         if(S.targetCats.includes(cc)) matches++;
+      }
+      
+      const maxMatches = Math.min(S.targetCats.length, 6);
+      let pct = Math.min(100, Math.max(5, Math.floor((matches / maxMatches) * 100)));
+      
+      document.getElementById('semantic-fill').style.width = pct + '%';
+      if (pct < 15) document.getElementById('semantic-fill').style.background = '#1A4F8A'; // Cold
+      else if (pct < 50) document.getElementById('semantic-fill').style.background = '#e3a022'; // Warm
+      else document.getElementById('semantic-fill').style.background = '#c23a45'; // Hot
+  }
+
     async function loadFrame(title) {
       const frame = document.getElementById('wiki-frame');
       frame.classList.add('fading'); prog(20);
@@ -227,42 +329,45 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
     }
 
     /* ─── GAME ────────────────────────────────── */
-    async function startGame() {
-      clearInterval(S.timer);
-      S.penalty = 0;
-      S.path = [S.pair.start];
-      S.seconds = S.mode === 'survival' ? 60 : 0;
-      S.busy = false;
-      document.getElementById('hint-display').style.display = 'none';
-      document.getElementById('loading-title').textContent = S.pair.start;
-      document.getElementById('loading-sub').textContent = 'Chargement de l\'article';
-      show('loading');
-      try {
-        const [rt, resolvedEnd] = await Promise.all([
-          loadFrame(S.pair.start),
-          resolveTitle(S.pair.end)
-        ]);
-        S.path[0] = rt;
-        S.pair.end = resolvedEnd;
-        document.getElementById('hdr-start').textContent = S.pair.start;
-        document.getElementById('hdr-end').textContent = resolvedEnd;
-        document.getElementById('hdr-clicks').textContent = '0 clic';
-        const tel = document.getElementById('hdr-timer');
-        tel.classList.toggle('survival', S.mode === 'survival');
-        if (S.mode === 'competitive' || S.mode === 'survival') {
-          tel.style.display = ''; tel.textContent = fmt(S.seconds);
-          S.timer = setInterval(() => {
-            if (S.mode === 'survival') {
-              S.seconds--; tel.textContent = fmt(S.seconds);
-              if (S.seconds <= 0) { clearInterval(S.timer); showLose(); }
-            } else {
-              S.seconds++; tel.textContent = fmt(S.seconds);
-            }
-          }, 1000);
-        } else { tel.style.display = 'none'; }
-        updateBar(rt); renderGraph(); show('game');
-      } catch (e) { alert('Erreur de chargement.'); show('home'); }
-    }
+  async function startGame(){
+    clearInterval(S.timer);
+    S.penalty=0;
+    S.path=[S.pair.start];
+    S.seconds = S.mode==='survival' ? 60 : 0;
+    S.busy=false;
+    document.getElementById('hint-display').style.display='none';
+    document.getElementById('semantic-fill').style.width='0%';
+    document.getElementById('loading-title').textContent=S.pair.start;
+    document.getElementById('loading-sub').textContent='Chargement statique...';
+    show('loading');
+    try {
+      const [rt, resolvedEnd, targetCats]=await Promise.all([
+        loadFrame(S.pair.start),
+        resolveTitle(S.pair.end),
+        fetchCategories(S.pair.end)
+      ]);
+      S.targetCats = targetCats || [];
+      S.path[0]=rt;
+      S.pair.end=resolvedEnd;
+      document.getElementById('hdr-start').textContent=S.pair.start;
+      document.getElementById('hdr-end').textContent=resolvedEnd;
+      document.getElementById('hdr-clicks').textContent='0 clic';
+      const tel = document.getElementById('hdr-timer');
+      tel.classList.toggle('survival', S.mode === 'survival');
+      if (S.mode === 'competitive' || S.mode === 'survival') {
+        tel.style.display = ''; tel.textContent = fmt(S.seconds);
+        S.timer = setInterval(() => {
+          if (S.mode === 'survival') {
+            S.seconds--; tel.textContent = fmt(S.seconds);
+            if (S.seconds <= 0) { clearInterval(S.timer); showLose(); }
+          } else {
+            S.seconds++; tel.textContent = fmt(S.seconds);
+          }
+        }, 1000);
+      } else { tel.style.display = 'none'; }
+      updateBar(rt); renderGraph(); show('game');
+    } catch (e) { alert('Erreur de chargement.'); show('home'); }
+  }
 
     async function replayGame() { await startGame(); }
 
@@ -281,8 +386,9 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
           setTimeout(() => document.getElementById('hdr-timer').style.color = '', 400);
         }
         document.getElementById('hdr-clicks').textContent = `${c} clic${c > 1 ? 's' : ''}`;
+        computeSemanticHeat(t);
         updateBar(t); renderGraph();
-        if (isTarget(t)) { clearInterval(S.timer); setTimeout(showWin, 400); }
+        if (isTarget(t)) { clearInterval(S.timer); if(S.mode==='daily') winDaily(); setTimeout(showWin, 400); }
       } catch (e) { alert('Article introuvable.'); }
       S.busy = false;
     }
@@ -352,8 +458,65 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
       return node;
     }
 
-    function showWin() {
-      const c = S.path.length - 1 + S.penalty;
+    function drawWinGraph() {
+     const svg = document.getElementById('win-svg');
+     if(!svg) return;
+     svg.innerHTML = '';
+     
+     const r = 20;
+     const gapX = 65;
+     const path = S.path;
+     
+     const w = Math.max(path.length * gapX + gapX, 300);
+     svg.setAttribute('width', w);
+     svg.setAttribute('height', 160);
+     
+     let lastX = -1, lastY = -1;
+     
+     for (let i = 0; i < path.length; i++) {
+        let x = 40 + i * gapX;
+        let y = 80 + (i % 2 === 0 ? -15 : 15);
+        
+        if (i > 0) {
+           const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+           line.setAttribute('x1', lastX); line.setAttribute('y1', lastY);
+           line.setAttribute('x2', x); line.setAttribute('y2', y);
+           line.setAttribute('stroke', 'var(--rule)');
+           line.setAttribute('stroke-width', '2');
+           line.setAttribute('stroke-dasharray', '4');
+           svg.appendChild(line);
+        }
+        lastX = x; lastY = y;
+     }
+
+     for (let i = 0; i < path.length; i++) {
+        let x = 40 + i * gapX;
+        let y = 80 + (i % 2 === 0 ? -15 : 15);
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x);
+        circle.setAttribute('cy', y);
+        circle.setAttribute('r', 8);
+        const color = (i === 0) ? 'var(--pass)' : (i === path.length - 1) ? 'var(--accent)' : 'var(--text)';
+        circle.setAttribute('fill', color);
+        svg.appendChild(circle);
+        
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', x);
+        txt.setAttribute('y', y + 25);
+        txt.setAttribute('fill', 'var(--text)');
+        txt.setAttribute('font-family', 'var(--fm)');
+        txt.setAttribute('font-size', '10px');
+        txt.setAttribute('text-anchor', 'middle');
+        let tStr = path[i];
+        if(tStr.length > 10) tStr = tStr.substring(0,8)+'...';
+        txt.textContent = tStr;
+        svg.appendChild(txt);
+     }
+  }
+
+  function showWin(){
+    const c=S.path.length-1+S.penalty;
 
       // Absolute Record
       let rec = localStorage.getItem('wikipath_best');
@@ -365,36 +528,93 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
         document.getElementById('win-best').textContent = `Record Absolu : ${rec} clics`;
       }
 
-      document.querySelector('.win-kicker').textContent = 'Victoire';
+      // Optimal Calculation
+    const matchPair = PAIRS.find(p => p.start === S.pair.start && p.end === S.pair.end);
+    document.getElementById('win-optimal').textContent = matchPair && matchPair.min 
+       ? `Chemin optimal théorique : ${matchPair.min} clics` 
+       : `Optimal inconnu (Recherche libre)`;
+
+    const solWrap = document.getElementById('win-solution');
+    if (solWrap) {
+       solWrap.style.display = matchPair && matchPair.path ? 'block' : 'none';
+       if (matchPair && matchPair.path) {
+          document.getElementById('sol-text').innerHTML = matchPair.path.join(' ➔ ');
+          document.getElementById('sol-text').style.display = 'none'; // hidden by default
+          document.getElementById('btn-sol').style.display = 'inline-block';
+       }
+    }
+
+    document.querySelector('.win-kicker').textContent = 'Victoire';
       document.getElementById('win-route').textContent = `${S.pair.start} → ${S.pair.end}`;
       document.getElementById('win-title').textContent = `« ${S.pair.start} » jusqu'à « ${S.pair.end} »`;
       document.getElementById('win-clicks').textContent = c;
       const tw = document.getElementById('win-time-wrap');
       if (S.mode === 'competitive') { tw.style.display = ''; document.getElementById('win-time').textContent = fmt(S.seconds); }
       else { tw.style.display = 'none'; }
-      const list = document.getElementById('win-path-list'); list.innerHTML = '';
+      
       S.path.forEach((t, i) => {
         const row = document.createElement('div'); row.className = 'win-item';
         const dot = document.createElement('div'); dot.className = 'win-dot';
         dot.style.background = i === 0 ? 'var(--pass)' : i === S.path.length - 1 ? 'var(--accent)' : 'var(--border)';
         const name = document.createElement('div'); name.className = 'win-name' + (i === 0 || i === S.path.length - 1 ? ' hi' : '');
-        name.textContent = t; row.appendChild(dot); row.appendChild(name); list.appendChild(row);
+        name.textContent = t; row.appendChild(dot); row.appendChild(name);
       });
 
       // Save to history
-      const newEntry = {
-        start: S.pair.start, end: S.pair.end, mode: S.mode,
-        clicks: c, time: S.mode === 'competitive' ? S.seconds : null,
-        date: new Date().toLocaleDateString('fr-FR')
-      };
-      saveHistory(newEntry);
-      renderStats();
+    const newEntry = {
+      start: S.pair.start, end: S.pair.end, mode: S.mode,
+      clicks: c, time: S.mode==='competitive' ? S.seconds : null,
+      date: new Date().toLocaleDateString('fr-FR')
+    };
+    saveHistory(newEntry);
+    renderStats();
+    drawWinGraph();
 
-      show('win');
-    }
+    show('win');
+  }
 
-    function goHome() { clearInterval(S.timer); show('home'); }
-    window.addEventListener('message', e => { if (e.data && e.data.type === 'wiki-nav') navigateTo(e.data.title); });
+  let hoverAbort = null;
+  window.addEventListener('message', e => { 
+    if(!e.data) return;
+    if(e.data.type==='wiki-nav') navigateTo(e.data.title); 
+    if(e.data.type==='wiki-hover') showPreview(e.data.title);
+    if(e.data.type==='wiki-unhover') hidePreview();
+  });
+  
+  window.addEventListener('mousemove', e => {
+     const pv = document.getElementById('wiki-preview');
+     if(pv.style.display !== 'none') {
+        pv.style.left = Math.min(e.clientX + 15, window.innerWidth - 330) + 'px';
+        pv.style.top = Math.min(e.clientY + 15, window.innerHeight - (pv.offsetHeight || 150) - 10) + 'px';
+     }
+  });
+
+  async function showPreview(title) {
+    if(hoverAbort) hoverAbort.abort();
+    hoverAbort = new AbortController();
+    try {
+      const r = await fetch(`${WIKI_REST}/page/summary/${encodeURIComponent(title.replace(/ /g,'_'))}`, {signal: hoverAbort.signal});
+      const d = await r.json();
+      if(!d.extract) return;
+      document.getElementById('wp-title').textContent = d.title;
+      document.getElementById('wp-desc').textContent = d.extract.substring(0, 160) + '...';
+      const img = document.getElementById('wp-img');
+      if (d.thumbnail && d.thumbnail.source) {
+         img.style.backgroundImage = `url(${d.thumbnail.source})`;
+         img.style.display = 'block';
+      } else {
+         img.style.display = 'none';
+      }
+      document.getElementById('wiki-preview').style.display = 'block';
+    } catch(err) {}
+  }
+  
+  function hidePreview() {
+    if(hoverAbort) hoverAbort.abort();
+    document.getElementById('wiki-preview').style.display = 'none';
+  }
+
+  function goHome(){ clearInterval(S.timer); show('home'); renderDailyUI(); }
 
     function saveHistory(entry) {
       let hist = JSON.parse(localStorage.getItem('wikipath_history') || '[]');
@@ -516,15 +736,16 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
     }
 
     /* Init */
-    renderHistory();
-
-    const params = new URLSearchParams(window.location.search);
-    const pathParam = params.get('path');
-    if (pathParam && pathParam.includes(',')) {
-      const [startRaw, endRaw] = pathParam.split(',');
-      selectArt('start', decodeURIComponent(startRaw));
-      selectArt('end', decodeURIComponent(endRaw));
-      alert(`🎯 On vous a mis au défi ! Trouvez le chemin de "${decodeURIComponent(startRaw)}" jusqu'à "${decodeURIComponent(endRaw)}" !`);
-    } else {
-      pickRandom();
-    }
+  renderHistory();
+  renderDailyUI();
+  
+  const params = new URLSearchParams(window.location.search);
+  const pathParam = params.get('path');
+  if (pathParam && pathParam.includes(',')) {
+    const [startRaw, endRaw] = pathParam.split(',');
+    selectArt('start', decodeURIComponent(startRaw));
+    selectArt('end', decodeURIComponent(endRaw));
+    alert(`🎯 On vous a mis au défi ! Trouvez le chemin de "${decodeURIComponent(startRaw)}" jusqu'à "${decodeURIComponent(endRaw)}" !`);
+  } else {
+    pickRandom();
+  }
