@@ -11,6 +11,8 @@ Wikipath est un jeu de navigation inspiré de WikiRace. Le joueur part d'un arti
 Deux modes disponibles :
 - **Exploration** — navigation libre avec retour en arrière autorisé
 - **Contre-la-montre** — timer activé, chaque seconde compte
+- **Chrono** - Ajout d'un chronomètre de 60 secondes maximum et un clic ça rajoute 10 secondes
+
 
 ---
 
@@ -25,7 +27,7 @@ Rendre la découverte de Wikipedia ludique et addictive. Le jeu exploite la stru
 - **HTML / CSS / JavaScript vanilla** — zéro framework, zéro dépendance
 - **API REST Wikipedia** (`fr.wikipedia.org/api/rest_v1`) — chargement des articles et résolution des titres canoniques
 - **API OpenSearch Wikipedia** — autocomplétion de la recherche d'articles
-- **Netlify** — hébergement statique
+- **Hebergement Nginx** — hébergement statique
 
 ---
 
