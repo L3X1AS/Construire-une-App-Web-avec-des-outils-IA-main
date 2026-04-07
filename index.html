@@ -51,7 +51,7 @@
 
     /* ─── Theme toggle ──────────────────────────── */
     .theme-btn {
-      position: fixed; top: 1.25rem; right: 1.5rem; z-index: 200;
+      position: fixed; top: .65rem; right: 1.25rem; z-index: 200;
       background: none; border: none; cursor: pointer;
       font-family: var(--fm); font-size: .65rem; letter-spacing: .18em;
       color: var(--muted); padding: 4px 0;
@@ -186,6 +186,25 @@
     .btn-play.ready:hover { transform: translateY(-1px); }
     .btn-play.ready:active { transform: translateY(0); }
 
+    /* History */
+    .history-row { margin: 2.5rem 0 1rem; width: 100%; text-align: left; }
+    .history-title {
+      font-family: var(--fd); font-weight: 600; font-style: italic;
+      font-size: 1.3rem; border-bottom: 2px solid var(--text);
+      padding-bottom: 5px; margin-bottom: 1rem; color: var(--text);
+    }
+    .history-list { display: flex; flex-direction: column; gap: .75rem; }
+    .history-item {
+      background: var(--surface); padding: 1rem 1.25rem;
+      border: 1px solid var(--border); border-left: 3px solid var(--pass);
+      display: flex; flex-direction: column; gap: .4rem;
+    }
+    .history-route { font-family: var(--fd); font-size: 1.1rem; font-weight: 600; color: var(--text); }
+    .history-meta {
+      font-family: var(--fm); font-size: .65rem; color: var(--muted);
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+
     /* Footer tags */
     .home-footer {
       margin-top: 1.5rem; display: flex; justify-content: center;
@@ -223,7 +242,7 @@
     }
     .game-header-top {
       display: flex; align-items: center;
-      padding: .5rem 1.25rem; gap: 1rem; flex-wrap: wrap;
+      padding: .5rem 5.5rem .5rem 1.25rem; gap: 1rem; flex-wrap: wrap;
     }
     .hdr-brand {
       font-family: var(--fd); font-size: 1rem; font-weight: 700;
@@ -238,11 +257,14 @@
     .hdr-stats { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
     .hdr-stat { font-family: var(--fm); font-size: .72rem; letter-spacing: .08em; color: var(--text); }
     .hdr-stat.timer { color: var(--muted); }
+    .hdr-stat.survival { color: var(--accent); font-weight: bold; }
+
     .btn-quit {
       font-family: var(--fm); font-size: .62rem; letter-spacing: .18em;
       text-transform: uppercase; background: none;
       border: 1px solid var(--border); color: var(--muted);
       padding: 3px 10px; cursor: pointer; transition: all .15s;
+      margin-left: auto;
     }
     .btn-quit:hover { border-color: var(--text); color: var(--text); }
 
@@ -273,6 +295,23 @@
       border: none; cursor: pointer; transition: color .15s; flex-shrink: 0;
     }
     .btn-back:hover { color: var(--text); }
+
+    .btn-hint {
+      font-family: var(--fm); font-size: .60rem; letter-spacing: .15em;
+      text-transform: uppercase; color: var(--accent); background: none;
+      border: 1px solid var(--acc-soft); cursor: pointer; transition: all .15s;
+      padding: 3px 8px; margin-left: auto; flex-shrink: 0;
+    }
+    .btn-hint:hover { background: var(--acc-dim); }
+    .btn-hint:disabled { opacity: 0.5; pointer-events: none; }
+
+    .hint-display {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: .6rem 1.25rem; font-family: var(--fm); font-size: .7rem;
+      color: var(--accent); letter-spacing: .02em; display: none;
+      animation: hintIn .3s ease;
+    }
+    @keyframes hintIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
 
     /* Main layout */
     .game-main { flex: 1; display: flex; min-height: 0; overflow: hidden; }
@@ -390,6 +429,24 @@
       cursor: pointer; transition: all .15s;
     }
     .btn-win-home:hover { border-color: var(--text); color: var(--text); }
+
+    .win-best { font-family: var(--fm); font-size: .65rem; color: var(--accent); letter-spacing: .1em; margin-top: .75rem; text-transform: uppercase; }
+    .win-share {
+      padding: .7rem 2rem; background: var(--pass); color: #fff;
+      border: none; font-family: var(--fm); font-size: .68rem;
+      letter-spacing: .2em; text-transform: uppercase; cursor: pointer;
+      transition: opacity .15s; display: block; width: 100%; margin-bottom: 1.5rem;
+    }
+    .win-share:hover { opacity: .85; }
+
+    .win-stats-top {
+      font-family: var(--fm); font-size: .65rem; color: var(--muted);
+      border: 1px solid var(--border); padding: 1.25rem 1.5rem; text-align: left;
+      margin-bottom: 2rem; width: 100%; max-width: 420px;
+    }
+    .win-stats-top-title { letter-spacing: .25em; text-transform: uppercase; margin-bottom: .85rem; }
+    .win-stats-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .win-stat-item { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 3px; }
   </style>
 </head>
 <body>
@@ -450,9 +507,15 @@
     <div class="mode-row">
       <button class="btn-mode sel" id="btn-m-chill" onclick="selectMode('chill')">Exploration</button>
       <button class="btn-mode"     id="btn-m-comp"  onclick="selectMode('competitive')">Contre-la-montre</button>
+      <button class="btn-mode"     id="btn-m-surv"  onclick="selectMode('survival')">Survie</button>
     </div>
 
     <button class="btn-play" id="btn-play" onclick="playGame()">Commencer</button>
+
+    <div class="history-row" id="history-row" style="display:none">
+      <div class="history-title">Dernières parties</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
 
     <div class="home-footer">
       <span class="foot-tag">Pages réelles</span>
@@ -498,7 +561,10 @@
     <div class="art-title" id="art-title">—</div>
     <span class="art-hint" id="art-hint">Cliquez les liens</span>
     <button class="btn-back" id="btn-back" style="display:none" onclick="goBack()">‹ Retour</button>
+    <button class="btn-hint" id="btn-hint" onclick="useHint()">Indice (+1 clic)</button>
   </div>
+  
+  <div id="hint-display" class="hint-display"></div>
 
   <div class="game-main">
     <div class="wiki-wrapper">
@@ -528,18 +594,41 @@
     <div>
       <div class="win-num" id="win-clicks">0</div>
       <div class="win-lbl">Clics</div>
+      <div class="win-best" id="win-best">Record : --</div>
     </div>
     <div id="win-time-wrap" style="display:none">
       <div class="win-num" id="win-time">00:00</div>
       <div class="win-lbl">Temps</div>
     </div>
   </div>
+  <button class="win-share" id="win-share-btn" onclick="shareResult()">Partager le résultat</button>
   <div class="win-path-wrap">
     <div class="win-path-label">Votre chemin</div>
     <div id="win-path-list"></div>
   </div>
+  <div class="win-stats-top" id="win-stats-top">
+    <div class="win-stats-top-title">Pages les plus visitées</div>
+    <div class="win-stats-list" id="win-stats-list"></div>
+  </div>
   <div class="win-btns">
     <button class="btn-win-replay" onclick="replayGame()">Rejouer</button>
+    <button class="btn-win-home"   onclick="goHome()">Accueil</button>
+  </div>
+</div>
+
+<!-- ══ LOSE ═══════════════════════════════════ -->
+<div id="screen-lose" class="screen">
+  <div class="win-kicker" style="color:var(--accent)">Temps Écoulé !</div>
+  <h2 class="win-title">Vous n'avez pas survécu</h2>
+  <div class="win-route" id="lose-route"></div>
+  <div class="win-stats">
+    <div>
+      <div class="win-num" id="lose-clicks">0</div>
+      <div class="win-lbl">Clics survécus</div>
+    </div>
+  </div>
+  <div class="win-btns">
+    <button class="btn-win-replay" onclick="replayGame()">Réessayer</button>
     <button class="btn-win-home"   onclick="goHome()">Accueil</button>
   </div>
 </div>
@@ -626,7 +715,7 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
 `;
 
   /* ─── STATE ───────────────────────────────── */
-  let S = { mode:'chill', pair:null, path:[], seconds:0, timer:null, busy:false, sel:{start:null,end:null} };
+  let S = { mode:'chill', pair:null, path:[], seconds:0, timer:null, busy:false, sel:{start:null,end:null}, penalty:0 };
   let dbt = {start:null,end:null};
   let sidx = {start:-1,end:-1};
 
@@ -720,6 +809,7 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
     S.mode=m;
     document.getElementById('btn-m-chill').classList.toggle('sel',m==='chill');
     document.getElementById('btn-m-comp').classList.toggle('sel',m==='competitive');
+    document.getElementById('btn-m-surv').classList.toggle('sel',m==='survival');
   }
 
   function playGame(){
@@ -775,7 +865,11 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
   /* ─── GAME ────────────────────────────────── */
   async function startGame(){
     clearInterval(S.timer);
-    S.path=[S.pair.start]; S.seconds=0; S.busy=false;
+    S.penalty=0;
+    S.path=[S.pair.start];
+    S.seconds = S.mode==='survival' ? 60 : 0;
+    S.busy=false;
+    document.getElementById('hint-display').style.display='none';
     document.getElementById('loading-title').textContent=S.pair.start;
     document.getElementById('loading-sub').textContent='Chargement de l\'article';
     show('loading');
@@ -790,9 +884,17 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
       document.getElementById('hdr-end').textContent=resolvedEnd;
       document.getElementById('hdr-clicks').textContent='0 clic';
       const tel=document.getElementById('hdr-timer');
-      if(S.mode==='competitive'){
-        tel.style.display=''; tel.textContent='00:00';
-        S.timer=setInterval(()=>{S.seconds++;tel.textContent=fmt(S.seconds);},1000);
+      tel.classList.toggle('survival', S.mode==='survival');
+      if(S.mode==='competitive' || S.mode==='survival'){
+        tel.style.display=''; tel.textContent=fmt(S.seconds);
+        S.timer=setInterval(()=>{
+          if(S.mode==='survival') {
+            S.seconds--; tel.textContent=fmt(S.seconds);
+            if(S.seconds<=0) { clearInterval(S.timer); showLose(); }
+          } else {
+            S.seconds++; tel.textContent=fmt(S.seconds);
+          }
+        },1000);
       } else { tel.style.display='none'; }
       updateBar(rt); renderGraph(); show('game');
     } catch(e){ alert('Erreur de chargement.'); show('home'); }
@@ -802,10 +904,18 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
 
   async function navigateTo(raw){
     if(S.busy) return; S.busy=true;
+    document.getElementById('hint-display').style.display='none';
     try {
       const t=await loadFrame(raw);
       S.path.push(t);
-      const c=S.path.length-1;
+      recordStat(t);
+      const c=S.path.length-1+S.penalty;
+      if(S.mode==='survival' && !isTarget(t)) { 
+        S.seconds += 10; 
+        document.getElementById('hdr-timer').textContent=fmt(S.seconds); 
+        document.getElementById('hdr-timer').style.color='var(--pass)';
+        setTimeout(()=>document.getElementById('hdr-timer').style.color='', 400);
+      }
       document.getElementById('hdr-clicks').textContent=`${c} clic${c>1?'s':''}`;
       updateBar(t); renderGraph();
       if(isTarget(t)){ clearInterval(S.timer); setTimeout(showWin,400); }
@@ -815,9 +925,10 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
 
   async function goBack(){
     if(S.busy||S.path.length<=1) return; S.busy=true;
+    document.getElementById('hint-display').style.display='none';
     S.path.pop();
     const prev=S.path[S.path.length-1];
-    const c=S.path.length-1;
+    const c=S.path.length-1+S.penalty;
     try {
       await loadFrame(prev);
       document.getElementById('hdr-clicks').textContent=`${c} clic${c>1?'s':''}`;
@@ -828,7 +939,10 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
 
   /* ─── HELPERS ─────────────────────────────── */
   function isTarget(t){ const n=s=>s.toLowerCase().replace(/_/g,' ').trim(); return n(t)===n(S.pair.end); }
-  function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+  function fmt(s){
+    if (s < 0) s = 0;
+    return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  }
   function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   function updateBar(title){
@@ -837,6 +951,13 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
     el.className='art-title'+(isT?' is-target':'');
     el.innerHTML=esc(title)+(isT?'<span class="target-flag">Cible atteinte</span>':'');
     document.getElementById('btn-back').style.display=(S.mode==='chill'&&S.path.length>1)?'':'none';
+  }
+
+  function showLose() {
+    const c=S.path.length-1+S.penalty;
+    document.getElementById('lose-route').textContent=`${S.pair.start} → ${S.pair.end}`;
+    document.getElementById('lose-clicks').textContent=c;
+    show('lose');
   }
 
   function renderGraph(){
@@ -868,9 +989,21 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
   }
 
   function showWin(){
-    const c=S.path.length-1;
+    const c=S.path.length-1+S.penalty;
+
+    // Absolute Record
+    let rec = localStorage.getItem('wikipath_best');
+    if (!rec || c < parseInt(rec)) {
+      localStorage.setItem('wikipath_best', c);
+      rec = c;
+      document.getElementById('win-best').textContent = `Nouveau Record Absolu : ${c} clic${c>1?'s':''} !`;
+    } else {
+      document.getElementById('win-best').textContent = `Record Absolu : ${rec} clics`;
+    }
+
+    document.querySelector('.win-kicker').textContent = 'Victoire';
+    document.getElementById('win-route').textContent = `${S.pair.start} → ${S.pair.end}`;
     document.getElementById('win-title').textContent=`« ${S.pair.start} » jusqu'à « ${S.pair.end} »`;
-    document.getElementById('win-route').textContent=`${S.pair.start} → ${S.pair.end}`;
     document.getElementById('win-clicks').textContent=c;
     const tw=document.getElementById('win-time-wrap');
     if(S.mode==='competitive'){ tw.style.display=''; document.getElementById('win-time').textContent=fmt(S.seconds); }
@@ -883,14 +1016,148 @@ html{scrollbar-color:${scr};scrollbar-width:thin}
       const name=document.createElement('div'); name.className='win-name'+(i===0||i===S.path.length-1?' hi':'');
       name.textContent=t; row.appendChild(dot); row.appendChild(name); list.appendChild(row);
     });
+
+    // Save to history
+    const newEntry = {
+      start: S.pair.start, end: S.pair.end, mode: S.mode,
+      clicks: c, time: S.mode==='competitive' ? S.seconds : null,
+      date: new Date().toLocaleDateString('fr-FR')
+    };
+    saveHistory(newEntry);
+    renderStats();
+
     show('win');
   }
 
   function goHome(){ clearInterval(S.timer); show('home'); }
   window.addEventListener('message',e=>{ if(e.data&&e.data.type==='wiki-nav') navigateTo(e.data.title); });
 
+  function saveHistory(entry) {
+    let hist = JSON.parse(localStorage.getItem('wikipath_history') || '[]');
+    hist.unshift(entry);
+    hist = hist.slice(0, 5);
+    localStorage.setItem('wikipath_history', JSON.stringify(hist));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const hist = JSON.parse(localStorage.getItem('wikipath_history') || '[]');
+    const row = document.getElementById('history-row');
+    const list = document.getElementById('history-list');
+    if(!hist.length) { row.style.display = 'none'; return; }
+    row.style.display = '';
+    list.innerHTML = '';
+    hist.forEach(h => {
+      const item = document.createElement('div'); item.className = 'history-item';
+      const route = document.createElement('div'); route.className = 'history-route';
+      route.textContent = `${h.start} → ${h.end}`;
+      const meta = document.createElement('div'); meta.className = 'history-meta';
+      const mMode = h.mode === 'competitive' ? 'Contre-la-montre' : 'Exploration';
+      let metaTxt = `${h.date} — ${mMode} — ${h.clicks} clic${h.clicks>1?'s':''}`;
+      if (h.time !== null) metaTxt += ` — ${fmt(h.time)}`;
+      meta.textContent = metaTxt;
+      item.appendChild(route); item.appendChild(meta); list.appendChild(item);
+    });
+  }
+
+  /* New Actions and Stats */
+  async function useHint() {
+    if (S.busy) return;
+    const curTitle = S.path[S.path.length - 1];
+    const endTitle = S.pair.end;
+    if (isTarget(curTitle)) return;
+    S.busy = true;
+    const btn = document.getElementById('btn-hint');
+    btn.disabled = true;
+    const hd = document.getElementById('hint-display');
+    btn.textContent = "Recherche...";
+    
+    try {
+      const encCur = encodeURIComponent(curTitle);
+      const encEnd = encodeURIComponent(endTitle);
+      
+      const [resA, resB] = await Promise.all([
+        fetch(`${WIKI_API}?action=query&titles=${encCur}&prop=links&pllimit=500&format=json&origin=*`),
+        fetch(`${WIKI_API}?action=query&titles=${encEnd}&prop=linkshere&lhlimit=500&format=json&origin=*`)
+      ]);
+      const dataA = await resA.json(), dataB = await resB.json();
+      
+      let linksFromA = [];
+      for (let p in dataA.query.pages) { if(dataA.query.pages[p].links) linksFromA = dataA.query.pages[p].links.map(l => l.title); }
+      let linksToB = [];
+      for (let p in dataB.query.pages) { if(dataB.query.pages[p].linkshere) linksToB = dataB.query.pages[p].linkshere.map(l => l.title); }
+
+      let msg = "";
+      if (linksFromA.includes(endTitle)) {
+        msg = `🎉 Super ! Cliquez sur le lien "${endTitle}" qui se trouve directement sur cette page !`;
+      } else {
+        const intersection = linksFromA.filter(x => linksToB.includes(x));
+        if (intersection.length > 0) {
+          msg = `🔗 Bonne nouvelle, le lien "${intersection[0]}" se trouve sur cette page, et il mène directement à "${endTitle}" ! Cherchez-le et cliquez.`;
+        } else {
+          msg = `🧭 Aucun lien direct ou à 1 étape trouvé. Tentez de rejoindre un sujet plus général.`;
+        }
+      }
+      
+      hd.innerHTML = msg;
+      hd.style.display = 'block';
+
+      S.penalty += 1;
+      const c = S.path.length - 1 + S.penalty;
+      document.getElementById('hdr-clicks').textContent=`${c} clic${c>1?'s':''}`;
+      updateObjectiveBar();
+    } catch(e) { console.error(e); }
+    
+    S.busy = false;
+    btn.textContent = "Indice (+1 clic)";
+    btn.disabled = false;
+  }
+
+  function shareResult() {
+    const c = S.path.length - 1 + S.penalty;
+    let modeTxt = S.mode === 'competitive' ? ` en ${fmt(S.seconds)} min` : S.mode === 'survival' ? " en mode Survie" : "";
+    let url = window.location.origin + window.location.pathname;
+    // Add param
+    url += '?path=' + encodeURIComponent(S.pair.start) + ',' + encodeURIComponent(S.pair.end);
+    const text = `🎯 J'ai relié "${S.pair.start}" → "${S.pair.end}" en ${c} clics sur Wikipath${modeTxt} !\nViens battre mon score sur le même défi :\n${url}`;
+    navigator.clipboard.writeText(text).then(() => alert("Le lien du défi a été copié dans votre presse-papier !"));
+  }
+
+  function recordStat(title) {
+    let stats = JSON.parse(localStorage.getItem('wikipath_stats') || '{}');
+    stats[title] = (stats[title] || 0) + 1;
+    localStorage.setItem('wikipath_stats', JSON.stringify(stats));
+  }
+
+  function renderStats() {
+    const stats = JSON.parse(localStorage.getItem('wikipath_stats') || '{}');
+    const sorted = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0, 5);
+    const list = document.getElementById('win-stats-list');
+    list.innerHTML = '';
+    sorted.forEach(([title, count]) => {
+      const d = document.createElement('div'); d.className = 'win-stat-item';
+      const n = document.createElement('span'); n.textContent = title;
+      const c = document.createElement('span'); c.textContent = `${count} visite${count>1?'s':''}`;
+      c.style.color = 'var(--accent)'; c.style.fontFamily = 'var(--fm)'; c.style.fontSize = '.6rem';
+      d.appendChild(n); d.appendChild(c);
+      list.appendChild(d);
+    });
+    document.getElementById('win-stats-top').style.display = sorted.length > 0 ? 'block' : 'none';
+  }
+
   /* Init */
-  pickRandom();
+  renderHistory();
+  
+  const params = new URLSearchParams(window.location.search);
+  const pathParam = params.get('path');
+  if (pathParam && pathParam.includes(',')) {
+    const [startRaw, endRaw] = pathParam.split(',');
+    selectArt('start', decodeURIComponent(startRaw));
+    selectArt('end', decodeURIComponent(endRaw));
+    alert(`🎯 On vous a mis au défi ! Trouvez le chemin de "${decodeURIComponent(startRaw)}" jusqu'à "${decodeURIComponent(endRaw)}" !`);
+  } else {
+    pickRandom();
+  }
 </script>
 </body>
 </html>
