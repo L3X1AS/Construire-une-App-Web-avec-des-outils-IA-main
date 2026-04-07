@@ -27,7 +27,7 @@ Rendre la découverte de Wikipedia ludique et addictive. Le jeu exploite la stru
 - **HTML / CSS / JavaScript vanilla** — zéro framework, zéro dépendance
 - **API REST Wikipedia** (`fr.wikipedia.org/api/rest_v1`) — chargement des articles et résolution des titres canoniques
 - **API OpenSearch Wikipedia** — autocomplétion de la recherche d'articles
-- **Hebergement Nginx** — hébergement statique
+- **Hebergement Nginx** — Hébergement statique sur un Proxmox avec sécurité
 
 ---
 
