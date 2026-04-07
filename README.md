@@ -8,9 +8,11 @@
 
 Wikipath est un jeu de navigation inspiré de WikiRace. Le joueur part d'un article Wikipedia et doit rejoindre un article cible en cliquant uniquement sur les liens internes des pages. L'objectif : trouver le chemin le plus court possible.
 
-Deux modes disponibles :
+Quatre modes disponibles :
 - **Exploration** — navigation libre avec retour en arrière autorisé
-- **Contre-la-montre** — timer activé, chaque seconde compte
+- **Contre-la-montre** — timer activé, chaque seconde compte, battez votre record
+- **Survie** — 60 secondes maximum, chaque clic rapporte +10 secondes
+- **Défi du jour** — une paire identique pour tous les joueurs chaque jour, avec système de streak
 
 ---
 
@@ -25,7 +27,9 @@ Rendre la découverte de Wikipedia ludique et addictive. Le jeu exploite la stru
 - **HTML / CSS / JavaScript vanilla** — zéro framework, zéro dépendance
 - **API REST Wikipedia** (`fr.wikipedia.org/api/rest_v1`) — chargement des articles et résolution des titres canoniques
 - **API OpenSearch Wikipedia** — autocomplétion de la recherche d'articles
-- **Netlify** — hébergement statique
+- **Nginx** — serveur web statique auto-hébergé sur un hyperviseur Proxmox
+- **Cloudflare** — reverse proxy, protection DDoS, certificat SSL
+- **Firewall géo-restreint** — seules les connexions depuis la France sont autorisées
 
 ---
 
@@ -45,7 +49,7 @@ Rendre la découverte de Wikipedia ludique et addictive. Le jeu exploite la stru
 
 > *« Je voudrais que tu implémentes une dynamique de barre de progression lors d'une partie, avec un algorithme peut-être qui tourne en arrière-plan qui calcule le nombre de clics minimal requis pour arriver à la fin et qui montre donc au joueur en combien de clics il peut supposément finir la partie s'il joue bien. Qu'on soit d'accord, je ne veux pas qu'il y ait de réponse qui soit donnée. »*
 
-**Ce que ça a produit :** Un algorithme BFS (recherche en largeur) tournant en arrière-plan via l'API Wikipedia pour estimer la distance minimale entre l'article courant et la cible. Le résultat s'affiche sous forme de barre de progression sans révéler le chemin optimal.
+**Ce que ça a produit :** Un algorithme basé sur la similarité de catégories Wikipedia entre l'article courant et la cible. Le résultat s'affiche sous forme de barre de progression colorée (froide → chaude) sans révéler le chemin optimal.
 
 ---
 
@@ -53,7 +57,7 @@ Rendre la découverte de Wikipedia ludique et addictive. Le jeu exploite la stru
 
 > *« Le site comporte déjà une mécanique de comptage de clics lors d'une partie, je voudrais simplement que celle-ci soit incrémentée de 1 lorsqu'une demande d'indice est formulée. »*
 
-**Ce que ça a produit :** Un bouton "Indice" qui coûte 1 clic supplémentaire au compteur et révèle une information sur la direction à prendre, sans donner la réponse complète.
+**Ce que ça a produit :** Un bouton "Indice (+1 clic)" qui pénalise le compteur de 1 et révèle si la cible est atteignable directement ou en une étape depuis l'article courant, sans donner la réponse complète.
 
 ---
 
@@ -61,7 +65,7 @@ Rendre la découverte de Wikipedia ludique et addictive. Le jeu exploite la stru
 
 > *« Je voudrais qu'il soit affiché sur l'écran de victoire. »*
 
-**Ce que ça a produit :** L'affichage du nombre d'indices utilisés et du score final ajusté sur l'écran de victoire, aux côtés du nombre de clics et du temps.
+**Ce que ça a produit :** L'affichage du score final (clics + pénalités), du chemin optimal théorique, du record personnel et d'un graphe SVG visualisant le chemin parcouru sur l'écran de victoire.
 
 ---
 
@@ -79,11 +83,14 @@ Les liens Wikipedia dans l'iframe déclencheraient une navigation normale. Un sc
 **Filtrage des namespaces Wikipedia**
 Les liens Wikipedia incluent des namespaces non-articles (Aide:, Catégorie:, Portail:, etc.). Tous les liens contenant `:` sont filtrés pour ne garder que les vrais articles.
 
+**Hébergement auto-géré**
+Le site n'est pas hébergé sur une plateforme clé en main (Vercel, Netlify) mais sur une infrastructure personnelle : VM Proxmox, serveur Nginx, Cloudflare en reverse proxy avec géo-restriction France. Cela a nécessité la configuration du SSL, des règles Cloudflare et du pare-feu.
+
 ---
 
 ## 7. Application hébergée
 
-🔗 http://wikipath.alexis-briet.fr/
+🔗 https://wikipath.alexis-briet.fr/
 
 ---
 
