@@ -35,13 +35,33 @@ Rendre la découverte de Wikipedia ludique et addictive. Le jeu exploite la stru
 |-------|-------|
 | **Claude (claude.ai)** | Génération et itération du code complet, design éditorial, architecture de la logique de jeu, correction de bugs |
 | **Claude Code** | Refactoring, debugging en CLI, modifications ciblées sur des fichiers |
-| **Antigravity** | [Compléter avec ton usage] |
+| **Antigravity (Gemini)** | Implémentation de nouvelles fonctionnalités et amélioration du code, en complément de Claude |
 
 ---
 
 ## 5. Exemples de prompts
 
-*(à compléter avec tes prompts)*
+### Prompt 1 — Barre de progression dynamique
+
+> *« Je voudrais que tu implémentes une dynamique de barre de progression lors d'une partie, avec un algorithme peut-être qui tourne en arrière-plan qui calcule le nombre de clics minimal requis pour arriver à la fin et qui montre donc au joueur en combien de clics il peut supposément finir la partie s'il joue bien. Qu'on soit d'accord, je ne veux pas qu'il y ait de réponse qui soit donnée. »*
+
+**Ce que ça a produit :** Un algorithme BFS (recherche en largeur) tournant en arrière-plan via l'API Wikipedia pour estimer la distance minimale entre l'article courant et la cible. Le résultat s'affiche sous forme de barre de progression sans révéler le chemin optimal.
+
+---
+
+### Prompt 2 — Indice payant
+
+> *« Le site comporte déjà une mécanique de comptage de clics lors d'une partie, je voudrais simplement que celle-ci soit incrémentée de 1 lorsqu'une demande d'indice est formulée. »*
+
+**Ce que ça a produit :** Un bouton "Indice" qui coûte 1 clic supplémentaire au compteur et révèle une information sur la direction à prendre, sans donner la réponse complète.
+
+---
+
+### Prompt 3 — Affichage sur l'écran de victoire
+
+> *« Je voudrais qu'il soit affiché sur l'écran de victoire. »*
+
+**Ce que ça a produit :** L'affichage du nombre d'indices utilisés et du score final ajusté sur l'écran de victoire, aux côtés du nombre de clics et du temps.
 
 ---
 
@@ -63,13 +83,13 @@ Les liens Wikipedia incluent des namespaces non-articles (Aide:, Catégorie:, Po
 
 ## 7. Application hébergée
 
-🔗 [à compléter]
+🔗 http://wikipath.alexis-briet.fr/
 
 ---
 
 ## 8. Repo GitHub
 
-🔗 [à compléter]
+🔗 https://github.com/L3X1AS/Construire-une-App-Web-avec-des-outils-IA-main
 
 ---
 
