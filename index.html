@@ -1,228 +1,281 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Wikipath</title>
   <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap"
+          rel="stylesheet" />
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">SOMBRE</button>
+<button class="theme-btn" id="theme-btn" onclick="toggleTheme()">CLAIR</button>
 
-  <!-- ══ HOME ══════════════════════════════════ -->
-  <div id="screen-home" class="screen active">
-    <div class="home-inner">
+<!-- ══ HOME ══════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="home-inner">
 
-      <div class="masthead">
-        <hr class="hr hr-thick masthead-rule" />
-        <div class="masthead-title">Wikipath</div>
-        <div class="masthead-sub">Six degrés de séparation</div>
-        <hr class="hr hr-thick masthead-rule-b" />
+    <div class="masthead">
+      <hr class="hr hr-thick masthead-rule" />
+      <div class="masthead-title">Wikipath</div>
+      <div class="masthead-sub">Six degrés de séparation</div>
+      <hr class="hr hr-thick masthead-rule-b" />
+    </div>
+
+    <p class="home-desc">
+      Naviguez de page en page sur Wikipédia.<br />
+      Rejoignez l'article cible en un minimum de clics.
+    </p>
+
+    <!-- How to play -->
+    <div class="howto-row">
+      <div class="howto-step">
+        <div class="howto-num">01</div>
+        <div class="howto-text">Choisissez un article de départ et une destination</div>
       </div>
+      <div class="howto-step">
+        <div class="howto-num">02</div>
+        <div class="howto-text">Naviguez via les liens hypertexte de Wikipédia</div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-num">03</div>
+        <div class="howto-text">Atteignez la cible en un minimum de clics</div>
+      </div>
+    </div>
 
-      <p class="home-desc">
-        Naviguez de page en page sur Wikipédia.<br />
-        Rejoignez l'article cible en un minimum de clics.
-      </p>
-
-      <!-- Article picker -->
-      <div class="picker-row">
-        <div class="picker-col">
-          <span class="picker-label">Départ</span>
-          <div class="search-wrap">
-            <input class="search-input" id="inp-start" type="text" placeholder="Rechercher un article"
-              autocomplete="off" oninput="onSearch(this,'start')" onkeydown="onKey(event,'start')" />
-            <div class="suggestions" id="sug-start"></div>
-          </div>
-          <div class="selected-tag" id="tag-start">
-            <span id="tag-start-txt"></span>
-            <span class="tag-clear" onclick="clearSel('start')">×</span>
-          </div>
+    <!-- Article picker -->
+    <div class="picker-row">
+      <div class="picker-col">
+        <span class="picker-label">Départ</span>
+        <div class="search-wrap">
+          <input class="search-input" id="inp-start" type="text" placeholder="Rechercher un article"
+                 autocomplete="off" oninput="onSearch(this,'start')" onkeydown="onKey(event,'start')" />
+          <div class="suggestions" id="sug-start"></div>
         </div>
-
-        <div class="picker-arrow">→</div>
-
-        <div class="picker-col">
-          <span class="picker-label">Arrivée</span>
-          <div class="search-wrap">
-            <input class="search-input" id="inp-end" type="text" placeholder="Rechercher un article" autocomplete="off"
-              oninput="onSearch(this,'end')" onkeydown="onKey(event,'end')" />
-            <div class="suggestions" id="sug-end"></div>
-          </div>
-          <div class="selected-tag" id="tag-end">
-            <span id="tag-end-txt"></span>
-            <span class="tag-clear" onclick="clearSel('end')">×</span>
-          </div>
+        <div class="selected-tag" id="tag-start">
+          <span id="tag-start-txt"></span>
+          <span class="tag-clear" onclick="clearSel('start')">×</span>
         </div>
       </div>
 
-      <div class="random-row">
-        <button class="btn-random" onclick="pickRandom()">— Paire aléatoire —</button>
+      <div class="picker-arrow">→</div>
+
+      <div class="picker-col">
+        <span class="picker-label">Arrivée</span>
+        <div class="search-wrap">
+          <input class="search-input" id="inp-end" type="text" placeholder="Rechercher un article" autocomplete="off"
+                 oninput="onSearch(this,'end')" onkeydown="onKey(event,'end')" />
+          <div class="suggestions" id="sug-end"></div>
+        </div>
+        <div class="selected-tag" id="tag-end">
+          <span id="tag-end-txt"></span>
+          <span class="tag-clear" onclick="clearSel('end')">×</span>
+        </div>
       </div>
+    </div>
 
-      <!-- Daily Mode -->
-      <div class="random-row">
-        <button id="btn-daily" class="btn-random">🎯 JOUER DÉFI DU JOUR <span id="streak-disp"></span></button>
+    <div class="random-row">
+      <button class="btn-random" onclick="pickRandom()">— Paire aléatoire —</button>
+    </div>
+
+    <!-- Daily Mode -->
+    <div class="random-row">
+      <button id="btn-daily" class="btn-random">🎯 JOUER DÉFI DU JOUR <span id="streak-disp"></span></button>
+    </div>
+
+    <div class="mode-row">
+      <button id="btn-m-chill" class="btn-mode sel" onclick="selectMode('chill')">Exploration</button>
+      <button id="btn-m-daily" class="btn-mode" onclick="selectMode('daily')" style="display:none;">Défi du jour</button>
+      <button id="btn-m-comp"  class="btn-mode" onclick="selectMode('competitive')">Chrono</button>
+      <button id="btn-m-surv"  class="btn-mode" onclick="selectMode('survival')">Survie</button>
+    </div>
+    <div class="mode-desc" id="mode-desc"></div>
+
+    <button class="btn-play" id="btn-play" onclick="playGame()">Commencer</button>
+
+    <div class="history-row" id="history-row" style="display:none">
+      <div class="history-title">Dernières parties</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="stats-strip">
+      <div class="stats-strip-item">
+        <span class="stats-strip-num" id="strip-pairs">55</span>
+        <span class="stats-strip-lbl">paires disponibles</span>
       </div>
-
-      <div class="mode-row">
-        <button id="btn-m-chill" class="btn-mode sel" onclick="selectMode('chill')">Exploration</button>
-        <button id="btn-m-daily" class="btn-mode" onclick="selectMode('daily')" style="display:none;">Défi du jour</button>
-        <button id="btn-m-comp"  class="btn-mode" onclick="selectMode('competitive')">Chrono</button>
-        <button id="btn-m-surv"  class="btn-mode" onclick="selectMode('survival')">Survie</button>
+      <div class="stats-strip-sep"></div>
+      <div class="stats-strip-item">
+        <span class="stats-strip-num">4</span>
+        <span class="stats-strip-lbl">modes de jeu</span>
       </div>
-
-      <button class="btn-play" id="btn-play" onclick="playGame()">Commencer</button>
-
-      <div class="history-row" id="history-row" style="display:none">
-        <div class="history-title">Dernières parties</div>
-        <div class="history-list" id="history-list"></div>
+      <div class="stats-strip-sep"></div>
+      <div class="stats-strip-item">
+        <span class="stats-strip-num" id="strip-played">0</span>
+        <span class="stats-strip-lbl">parties jouées</span>
       </div>
+    </div>
 
-      <div class="home-footer">
-        <span class="foot-tag">Pages réelles</span>
-        <span class="foot-sep">·</span>
-        <span class="foot-tag">Graphe de chemin</span>
-        <span class="foot-sep">·</span>
-        <span class="foot-tag">Retour autorisé (exploration)</span>
+    <div class="home-footer">
+      <span class="foot-tag">Pages réelles</span>
+      <span class="foot-sep">·</span>
+      <span class="foot-tag">Graphe de chemin</span>
+      <span class="foot-sep">·</span>
+      <span class="foot-tag">Retour autorisé (exploration)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOADING ═══════════════════════════════ -->
+<div id="screen-loading" class="screen">
+  <div class="loading-title" id="loading-title">Chargement</div>
+  <div class="loading-sub" id="loading-sub">Récupération de l'article</div>
+  <div class="loading-bar">
+    <div class="loading-bar-fill"></div>
+  </div>
+</div>
+
+<!-- ══ GAME ══════════════════════════════════ -->
+<div id="screen-game" class="screen">
+
+  <div class="game-header">
+    <div class="game-header-top">
+      <span class="hdr-brand">Wikipath</span>
+      <span class="hdr-sep">·</span>
+      <div class="hdr-route">
+        <span class="hdr-art start" id="hdr-start">—</span>
+        <span class="hdr-arr">→</span>
+        <span class="hdr-art end" id="hdr-end">—</span>
+      </div>
+      <span class="hdr-sep">·</span>
+      <div class="hdr-stats">
+        <span class="hdr-stat" id="hdr-clicks">0 clic</span>
+        <span class="hdr-stat timer" id="hdr-timer" style="display:none">00:00</span>
+      </div>
+      <button class="btn-quit" onclick="goHome()">Quitter</button>
+    </div>
+    <hr class="hr" style="margin:0" />
+  </div>
+
+  <div class="article-bar">
+    <span class="art-label">Article</span>
+    <div class="art-title" id="art-title">—</div>
+    <span class="art-hint" id="art-hint">Cliquez les liens</span>
+    <button class="btn-back" id="btn-back" style="display:none" onclick="goBack()">‹ Retour</button>
+    <button class="btn-hint" id="btn-hint" onclick="useHint()">Indice (+1 clic)</button>
+  </div>
+
+  <div id="hint-display" class="hint-display"></div>
+
+  <div class="game-main">
+    <div class="wiki-wrapper">
+      <div class="prog-bar">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <div id="semantic-bar"><div id="semantic-fill"></div></div>
+
+      <iframe id="wiki-frame" title="Article Wikipédia"></iframe>
+    </div>
+
+    <div class="panel-graph">
+      <div class="graph-header">
+        <div class="graph-label">Chemin parcouru</div>
+      </div>
+      <div class="graph-scroll" id="graph-scroll">
+        <div class="graph-tl" id="graph-tl">
+          <div class="graph-line" id="graph-line"></div>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ══ LOADING ═══════════════════════════════ -->
-  <div id="screen-loading" class="screen">
-    <div class="loading-title" id="loading-title">Chargement</div>
-    <div class="loading-sub" id="loading-sub">Récupération de l'article</div>
-    <div class="loading-bar">
-      <div class="loading-bar-fill"></div>
-    </div>
-  </div>
+<!-- ══ WIN ═══════════════════════════════════ -->
+<div id="screen-win" class="screen">
+  <div class="win-inner">
 
-  <!-- ══ GAME ══════════════════════════════════ -->
-  <div id="screen-game" class="screen">
-
-    <div class="game-header">
-      <div class="game-header-top">
-        <span class="hdr-brand">Wikipath</span>
-        <span class="hdr-sep">·</span>
-        <div class="hdr-route">
-          <span class="hdr-art start" id="hdr-start">—</span>
-          <span class="hdr-arr">→</span>
-          <span class="hdr-art end" id="hdr-end">—</span>
-        </div>
-        <span class="hdr-sep">·</span>
-        <div class="hdr-stats">
-          <span class="hdr-stat" id="hdr-clicks">0 clic</span>
-          <span class="hdr-stat timer" id="hdr-timer" style="display:none">00:00</span>
-        </div>
-        <button class="btn-quit" onclick="goHome()">Quitter</button>
-      </div>
-      <hr class="hr" style="margin:0" />
-    </div>
-
-    <div class="article-bar">
-      <span class="art-label">Article</span>
-      <div class="art-title" id="art-title">—</div>
-      <span class="art-hint" id="art-hint">Cliquez les liens</span>
-      <button class="btn-back" id="btn-back" style="display:none" onclick="goBack()">‹ Retour</button>
-      <button class="btn-hint" id="btn-hint" onclick="useHint()">Indice (+1 clic)</button>
-    </div>
-
-    <div id="hint-display" class="hint-display"></div>
-
-    <div class="game-main">
-      <div class="wiki-wrapper">
-        <div class="prog-bar">
-          <div class="prog-fill" id="prog-fill"></div>
-        </div>
-        
-        <!-- Radar Thématique -->
-        <div id="semantic-bar" style="position:absolute; top:2px; left:0; right:0; height:4px; z-index:20; pointer-events:none; background:var(--rule); display:flex; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
-           <div id="semantic-fill" style="height:100%; width:0%; background:linear-gradient(90deg, #1A4F8A, #4a9a70, #c23a45); transition:width .5s ease, background-color .5s; position:relative;">
-               <div style="position:absolute; right:2px; top:8px; font-family:var(--fm); font-size:9px; font-weight:bold; color:var(--text); text-shadow:0 0 2px var(--bg); letter-spacing:1px; white-space:nowrap; transform:translateX(100%);">🌡 RADAR (THERMIQUE)</div>
-           </div>
-        </div>
-
-        <iframe id="wiki-frame" title="Article Wikipédia"></iframe>
-      </div>
-
-      <div class="panel-graph">
-        <div class="graph-header">
-          <div class="graph-label">Chemin parcouru</div>
-        </div>
-        <div class="graph-scroll" id="graph-scroll">
-          <div class="graph-tl" id="graph-tl">
-            <div class="graph-line" id="graph-line"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ WIN ═══════════════════════════════════ -->
-  <div id="screen-win" class="screen">
     <div class="win-kicker">Victoire</div>
     <h2 class="win-title" id="win-title">Chemin trouvé</h2>
     <div class="win-route" id="win-route"></div>
-    <div class="win-stats">
-      <div>
-        <div class="win-num" id="win-clicks">0</div>
-        <div class="win-lbl">Clics</div>
+
+    <!-- Stats + chemin côte à côte sur desktop -->
+    <div class="win-body">
+
+      <!-- Colonne gauche : stats -->
+      <div class="win-col-stats">
+        <div class="win-stats">
+          <div>
+            <div class="win-num" id="win-clicks">0</div>
+            <div class="win-lbl">Clics</div>
+          </div>
+          <div id="win-time-wrap" style="display:none">
+            <div class="win-num" id="win-time">00:00</div>
+            <div class="win-lbl">Temps</div>
+          </div>
+        </div>
         <div class="win-best" id="win-best">Record : --</div>
         <div class="win-best" id="win-optimal" style="color:var(--sub); margin-top:4px;"></div>
-        
-        <div id="win-solution" style="display:none; margin-top:10px; font-family:var(--fm); font-size:.7rem; color:var(--muted);">
-          <button id="btn-sol" onclick="document.getElementById('sol-text').style.display='block'; this.style.display='none';" style="background:none; border:1px dashed var(--border); color:var(--text); padding:5px 10px; cursor:pointer; font-family:var(--fm); font-size:.62rem; text-transform:uppercase; letter-spacing:0.1em; transition:0.2s;"> Révéler le chemin optimal</button>
-          <div id="sol-text" style="display:none; margin-top:8px; line-height:1.5; color:var(--pass);"></div>
+
+        <div id="win-solution" style="display:none; margin-top:.85rem; font-family:var(--fm); font-size:.68rem; color:var(--muted);">
+          <button id="btn-sol" onclick="document.getElementById('sol-text').style.display='block'; this.style.display='none';" style="background:none; border:1px dashed var(--border); color:var(--text); padding:4px 9px; cursor:pointer; font-family:var(--fm); font-size:.6rem; text-transform:uppercase; letter-spacing:0.1em; transition:0.2s;">Révéler le chemin optimal</button>
+          <div id="sol-text" style="display:none; margin-top:6px; line-height:1.5; color:var(--pass);"></div>
         </div>
       </div>
-      <div id="win-time-wrap" style="display:none">
-        <div class="win-num" id="win-time">00:00</div>
-        <div class="win-lbl">Temps</div>
+
+      <!-- Colonne droite : chemin parcouru -->
+      <div class="win-path-wrap" id="win-path-wrap" style="display:none;">
+        <div class="win-path-label">Chemin parcouru</div>
+        <div id="win-path-list"></div>
       </div>
-    </div>
-    <button class="win-share" id="win-share-btn" onclick="shareResult()">Partager le résultat</button>
 
-    <div class="win-stats-top" id="win-stats-top">
-      <div class="win-stats-top-title">Pages les plus visitées</div>
-      <div class="win-stats-list" id="win-stats-list"></div>
-    </div>
-    
-    <!-- Graphe Dessiné SVG -->
-    <div id="win-svg-wrap" style="width:100%; max-width:600px; margin: 0 auto 2rem; overflow-x:auto;">
-       <svg id="win-svg" width="100" height="80" style="display:block; margin:auto; overflow:visible;"></svg>
     </div>
 
+    <!-- Roadmap SVG -->
+    <div id="win-svg-wrap">
+      <svg id="win-svg"></svg>
+    </div>
+
+    <!-- Boutons actions -->
     <div class="win-btns">
       <button class="btn-win-replay" onclick="replayGame()">Rejouer</button>
       <button class="btn-win-home" onclick="goHome()">Accueil</button>
     </div>
-  </div>
-
-  <!-- ══ LOSE ═══════════════════════════════════ -->
-  <div id="screen-lose" class="screen">
-    <div class="win-kicker" style="color:var(--accent)">Temps Écoulé !</div>
-    <h2 class="win-title">Vous n'avez pas survécu</h2>
-    <div class="win-route" id="lose-route"></div>
-    <div class="win-stats">
-      <div>
-        <div class="win-num" id="lose-clicks">0</div>
-        <div class="win-lbl">Clics survécus</div>
-      </div>
+    <div class="win-share-row">
+      <button class="win-share" id="btn-copy-score" onclick="copyScore()">Copier le score</button>
+      <button class="win-share win-share-link" id="btn-copy-link" onclick="copyLink()">Copier le lien</button>
     </div>
-    <div class="win-btns">
-      <button class="btn-win-replay" onclick="replayGame()">Réessayer</button>
-      <button class="btn-win-home" onclick="goHome()">Accueil</button>
+
+    <!-- Stats secondaires -->
+    <div class="win-stats-top" id="win-stats-top">
+      <div class="win-stats-top-title">Pages les plus visitées</div>
+      <div class="win-stats-list" id="win-stats-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ LOSE ═══════════════════════════════════ -->
+<div id="screen-lose" class="screen">
+  <div class="win-kicker" style="color:var(--accent)">Temps Écoulé !</div>
+  <h2 class="win-title">Vous n'avez pas survécu</h2>
+  <div class="win-route" id="lose-route"></div>
+  <div class="win-stats">
+    <div>
+      <div class="win-num" id="lose-clicks">0</div>
+      <div class="win-lbl">Clics survécus</div>
     </div>
   </div>
+  <div class="win-btns">
+    <button class="btn-win-replay" onclick="replayGame()">Réessayer</button>
+    <button class="btn-win-home" onclick="goHome()">Accueil</button>
+  </div>
+</div>
 
-  <script src="app.js" defer="defer"></script>
+<script src="app.js" defer="defer"></script>
 <div id="wiki-preview" style="display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.15); max-width:320px; border-radius:6px; pointer-events:none; overflow:hidden;">
   <div id="wp-img" style="width:100%; height:120px; background-size:cover; background-position:center; display:none;"></div>
   <div style="padding:1rem;">
