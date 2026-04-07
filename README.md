@@ -85,7 +85,7 @@ Les liens Wikipedia incluent des namespaces non-articles (Aide:, Catégorie:, Po
 
 ## 7. Application hébergée
 
-🔗 http://wikipath.alexis-briet.fr/
+🔗 https://wikipath.alexis-briet.fr/
 
 ---
 
